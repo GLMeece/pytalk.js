@@ -27,6 +27,7 @@ var Worker = exports.Worker = function () {
 		this.process = spawn(this.opts.pythonPath, ['-c', pyCode]);
 
 		this.process.stderr.on('data', function (data) {
+			fs.writeFileSync('generated-code.py', pyCode);
 			throw new Error(data);
 		});
 	}
@@ -53,7 +54,9 @@ var Worker = exports.Worker = function () {
 		}
 	}, {
 		key: 'send',
-		value: function send(eventName, data) {
+		value: function send(eventName) {
+			var data = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+
 			data = JSON.stringify({
 				eventName: eventName,
 				data: data

@@ -15,7 +15,7 @@ def pytalk_on(event_name, callback=None):
 
 	return save_callback(callback)
 
-def pytalk_send(event_name, data):
+def pytalk_send(event_name, data=None):
 	json_data = json.dumps({
 		'eventName': event_name,
 		'data': data

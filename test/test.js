@@ -2,7 +2,6 @@ let pytalk = require('../index.js');
 let expect = require("chai").expect;
 
 describe('Pytalk worker', () => {
-
 	it('recieves event from python', done => {
 		let worker = new pytalk.Worker(__dirname + '/testSimple.py');
 		worker.on('done', data => {
@@ -11,6 +10,15 @@ describe('Pytalk worker', () => {
 
 		worker.send('request', true);
 	});
+
+	it('sends event without data', done => {
+		let worker = new pytalk.Worker(__dirname + '/testDecorator.py');
+		worker.on('done', data => {
+			done();
+		});
+
+		worker.send('request');
+	});	
 
 	it('recieves 2 events from python', done => {
 		let worker = new pytalk.Worker(__dirname + '/testSimple.py');
@@ -66,9 +74,9 @@ describe('Pytalk worker', () => {
 			}
 		});
 
-		worker.send('request', {});
-		worker.send('request', {});
-		worker.send('request', {});
+		worker.send('request');
+		worker.send('request');
+		worker.send('request');
 	});
 
 	it('sends data with newlines', done => {

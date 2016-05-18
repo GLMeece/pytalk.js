@@ -17,6 +17,7 @@ export class Worker {
 		]);
 
 		this.process.stderr.on('data', data => {
+			fs.writeFileSync('generated-code.py', pyCode);
 			throw new Error(data);
 		});
 	}
@@ -38,7 +39,7 @@ export class Worker {
 		});
 	}
 
-	send(eventName, data) {
+	send(eventName, data = null) {
 		data = JSON.stringify({
 			eventName: eventName,
 			data: data
