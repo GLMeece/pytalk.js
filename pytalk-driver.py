@@ -34,6 +34,9 @@ while True:
 	except:
 		continue	
 
+	if 'exitSignal' in data:
+		raise SystemExit
+
 	if data['eventName'] not in pytalk_events:
 		continue
 

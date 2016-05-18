@@ -54,14 +54,19 @@ var Worker = exports.Worker = function () {
 		value: function send(eventName) {
 			var data = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
-			data = JSON.stringify({
+			this._sendToStdin({
 				eventName: eventName,
 				data: data
 			});
+		}
+	}, {
+		key: 'close',
+		value: function close() {
+			this._sendToStdin({
+				exitSignal: true
+			});
 
-			this.process.stdin.cork();
-			this.process.stdin.write(data + '\n');
-			this.process.stdin.uncork();
+			this.process.stdout.pause();
 		}
 	}, {
 		key: '_convertPyCode',
@@ -75,6 +80,15 @@ var Worker = exports.Worker = function () {
 			return {
 				pythonPath: 'python'
 			};
+		}
+	}, {
+		key: '_sendToStdin',
+		value: function _sendToStdin(data) {
+			data = JSON.stringify(data);
+
+			this.process.stdin.cork();
+			this.process.stdin.write(data + '\n');
+			this.process.stdin.uncork();
 		}
 	}]);
 

@@ -7,6 +7,7 @@ const PYTALK_DRIVER = fs.readFileSync('pytalk-driver.py', 'utf-8');
 const PYTALK_CODE_LABEL = '{_PYTALK_PYTHON_CODE_GOES_HERE_}';
 
 export class Worker {
+
 	constructor(path, opts = this._defaultOpts()) {
 		let pyCode = fs.readFileSync(path, 'utf-8');
 		pyCode = this._convertPyCode(pyCode);
@@ -40,14 +41,18 @@ export class Worker {
 	}
 
 	send(eventName, data = null) {
-		data = JSON.stringify({
+		this._sendToStdin({
 			eventName: eventName,
 			data: data
 		});
+	}
 
-		this.process.stdin.cork();
-		this.process.stdin.write(data + '\n');
-		this.process.stdin.uncork();
+	close() {
+		this._sendToStdin({
+			exitSignal: true
+		});
+
+		this.process.stdout.pause();
 	}
 
 	_convertPyCode(pyCode) {
@@ -59,5 +64,13 @@ export class Worker {
 		return {
 			pythonPath: 'python'
 		};
+	}
+
+	_sendToStdin(data) {
+		data = JSON.stringify(data);
+
+		this.process.stdin.cork();
+		this.process.stdin.write(data + '\n');
+		this.process.stdin.uncork();
 	}
 }

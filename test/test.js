@@ -5,6 +5,7 @@ describe('Pytalk worker', () => {
 	it('recieves event from python', done => {
 		let worker = new pytalk.Worker(__dirname + '/testSimple.py');
 		worker.on('done', data => {
+			worker.close();
 			done();
 		});
 
@@ -14,6 +15,7 @@ describe('Pytalk worker', () => {
 	it('sends event without data', done => {
 		let worker = new pytalk.Worker(__dirname + '/testDecorator.py');
 		worker.on('done', data => {
+			worker.close();
 			done();
 		});
 
@@ -26,6 +28,7 @@ describe('Pytalk worker', () => {
 
 		worker.on('done', data => {
 			if (++doneCount == 2) {
+				worker.close();
 				done();
 			}
 		});
@@ -42,6 +45,7 @@ describe('Pytalk worker', () => {
 		let worker = new pytalk.Worker(__dirname + '/testSimple.py');
 		worker.on('done', data => {
 			expect(data).to.deep.equal(testData);
+			worker.close();
 			done();
 		});
 
@@ -57,6 +61,7 @@ describe('Pytalk worker', () => {
 
 		worker.on('done', data => {
 			expect(data).to.deep.equal(testData);
+			worker.close();
 			done();
 		});
 
@@ -70,6 +75,7 @@ describe('Pytalk worker', () => {
 
 		worker.on('done', data => {
 			if (++doneCount == 3) {
+				worker.close();
 				done();
 			}
 		});
@@ -89,6 +95,7 @@ describe('Pytalk worker', () => {
 
 		worker.on('done', data => {
 			expect(data).to.deep.equal(testData);
+			worker.close();
 			done();
 		});
 
@@ -104,7 +111,8 @@ describe('Pytalk worker', () => {
 		for (let i = 0; i < workersNum; ++i) {
 			let worker = new pytalk.Worker(__dirname + '/testDecorator.py');
 			worker.on('done', data => {
-				if (++doneCount == workersNum) {
+				if (++doneCount == workersNum) {					
+					workers.forEach(w => w.close());
 					done();
 				}
 			});			
