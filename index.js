@@ -1,5 +1,9 @@
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -10,10 +14,8 @@ var spawn = require('child_process').spawn;
 var PYTALK_DRIVER = fs.readFileSync('pytalk-driver.py', 'utf-8');
 var PYTALK_CODE_LABEL = "{PYTHON_CODE}";
 
-var Worker = function () {
+var Worker = exports.Worker = function () {
 	function Worker(path) {
-		var _this = this;
-
 		var opts = arguments.length <= 1 || arguments[1] === undefined ? this._defaultOpts() : arguments[1];
 
 		_classCallCheck(this, Worker);
@@ -22,22 +24,30 @@ var Worker = function () {
 		pyCode = this._convertPyCode(pyCode);
 
 		this.opts = opts;
-
 		this.process = spawn(this.opts.pythonPath, ['-c', pyCode]);
 
 		this.process.stderr.on('data', function (data) {
-			fs.writeFileSync('code.py', _this.pyCode);
+			throw new Error(data);
 		});
 	}
 
 	_createClass(Worker, [{
 		key: 'on',
 		value: function on(eventName, callback) {
-			this.process.stdout.on('data', function (data) {
-				data = JSON.parse(data.toString('utf-8'));
+			var buffer = [];
 
-				if (data['eventName'] == eventName) {
-					callback(data['data']);
+			this.process.stdout.on('data', function (data) {
+				data = data.toString('utf-8');
+				buffer = data.split('\n').filter(function (s) {
+					return s.length;
+				});
+
+				var json = void 0;
+				while (json = buffer.shift()) {
+					var eventObj = JSON.parse(json);
+					if (eventObj['eventName'] == eventName) {
+						callback(eventObj['data']);
+					}
 				}
 			});
 		}
@@ -49,8 +59,9 @@ var Worker = function () {
 				data: data
 			});
 
-			this.process.stdin.write(data);
-			this.process.stdin.end();
+			this.process.stdin.cork();
+			this.process.stdin.write(data + '\n');
+			this.process.stdin.uncork();
 		}
 	}, {
 		key: '_convertPyCode',
@@ -69,7 +80,3 @@ var Worker = function () {
 
 	return Worker;
 }();
-
-module.exports = {
-	Worker: Worker
-};

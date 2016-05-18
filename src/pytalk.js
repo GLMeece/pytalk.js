@@ -6,28 +6,34 @@ const spawn = require('child_process').spawn;
 const PYTALK_DRIVER = fs.readFileSync('pytalk-driver.py', 'utf-8');
 const PYTALK_CODE_LABEL = "{PYTHON_CODE}";
 
-class Worker {
+export class Worker {
 	constructor(path, opts = this._defaultOpts()) {
-		var pyCode = fs.readFileSync(path, 'utf-8');
+		let pyCode = fs.readFileSync(path, 'utf-8');
 		pyCode = this._convertPyCode(pyCode);
 
 		this.opts = opts;
-
 		this.process = spawn(this.opts.pythonPath, [
 			'-c', pyCode
 		]);
 
 		this.process.stderr.on('data', data => {
-			fs.writeFileSync('code.py', this.pyCode);			
+			throw new Error(data);
 		});
 	}
 
 	on(eventName, callback) {
-		this.process.stdout.on('data', function(data) {
-			data = JSON.parse(data.toString('utf-8'));
+		let buffer = [];
 
-			if (data['eventName'] == eventName) {
-				callback(data['data']);
+		this.process.stdout.on('data', function(data) {
+			data = data.toString('utf-8');
+			buffer = data.split('\n').filter(s => s.length);
+
+			let json;
+			while (json = buffer.shift()) {
+				let eventObj = JSON.parse(json);
+				if (eventObj['eventName'] == eventName) {
+					callback(eventObj['data']);
+				}
 			}
 		});
 	}
@@ -38,8 +44,9 @@ class Worker {
 			data: data
 		});
 
-		this.process.stdin.write(data);
-		this.process.stdin.end();
+		this.process.stdin.cork();
+		this.process.stdin.write(data + '\n');
+		this.process.stdin.uncork();
 	}
 
 	_convertPyCode(pyCode) {
@@ -53,7 +60,3 @@ class Worker {
 		};
 	}
 }
-
-module.exports = {
-	Worker: Worker
-};

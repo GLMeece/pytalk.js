@@ -17,24 +17,25 @@ def pytalk_on(event_name, callback=None):
 
 def pytalk_send(event_name, data):
 	json_data = json.dumps({
-		"eventName": event_name,
-		"data": data
+		'eventName': event_name,
+		'data': data
 	})
 
-	sys.stdout.write(json_data)
+	sys.stdout.write(json_data + '\n')
 	sys.stdout.flush()
 
 {PYTHON_CODE}
 
 while True:
+	
 	try:
-		data = ''.join(sys.stdin.readlines())
+		data = sys.stdin.readline()
 		data = json.loads(data)
 	except:
+		continue	
+
+	if data['eventName'] not in pytalk_events:
 		continue
 
-	if data["eventName"] not in pytalk_events:
-		continue
-
-	for callback in pytalk_events[data["eventName"]]:
-		callback(data["data"])
+	for callback in pytalk_events[data['eventName']]:
+		callback(data['data'])
