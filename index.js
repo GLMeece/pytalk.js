@@ -35,16 +35,13 @@ var Worker = exports.Worker = function () {
 	_createClass(Worker, [{
 		key: 'on',
 		value: function on(eventName, callback) {
-			var buffer = [];
-
 			this.process.stdout.on('data', function (data) {
-				data = data.toString('utf-8');
-				buffer = data.split('\n').filter(function (s) {
+				data = data.toString('utf-8').split('\n').filter(function (s) {
 					return s.length;
 				});
 
 				var json = void 0;
-				while (json = buffer.shift()) {
+				while (json = data.shift()) {
 					var eventObj = JSON.parse(json);
 					if (eventObj['eventName'] == eventName) {
 						callback(eventObj['data']);

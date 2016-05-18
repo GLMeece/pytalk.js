@@ -23,14 +23,14 @@ export class Worker {
 	}
 
 	on(eventName, callback) {
-		let buffer = [];
-
 		this.process.stdout.on('data', function(data) {
-			data = data.toString('utf-8');
-			buffer = data.split('\n').filter(s => s.length);
+			data = data
+				.toString('utf-8')
+				.split('\n')
+				.filter(s => s.length);
 
 			let json;
-			while (json = buffer.shift()) {
+			while (json = data.shift()) {
 				let eventObj = JSON.parse(json);
 				if (eventObj['eventName'] == eventName) {
 					callback(eventObj['data']);
