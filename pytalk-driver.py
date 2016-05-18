@@ -24,7 +24,7 @@ def pytalk_send(event_name, data=None):
 	sys.stdout.write(json_data + '\n')
 	sys.stdout.flush()
 
-{PYTHON_CODE}
+{_PYTALK_PYTHON_CODE_GOES_HERE_}
 
 while True:
 	
