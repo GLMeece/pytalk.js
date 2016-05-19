@@ -18,10 +18,7 @@ export class Worker {
 			'-c', pyCode
 		]);
 
-		this.process.stderr.on('data', data => {
-			fs.writeFileSync('generated-code.py', pyCode);
-			throw new Error(data);
-		});
+		this.process.stderr.on('data', this.opts.stderr);
 	}
 
 	on(eventName, callback) {
@@ -79,7 +76,8 @@ export class Worker {
 	_defaultOpts() {
 		return {
 			pythonPath: 'python',
-			stdout: data => console.log(data)
+			stdout: data => console.log(data),
+			stderr: data => console.log(data)
 		};
 	}
 

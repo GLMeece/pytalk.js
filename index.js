@@ -23,13 +23,9 @@ var Worker = exports.Worker = function () {
 		pyCode = this._convertPyCode(pyCode);
 
 		this.opts = extend(this._defaultOpts(), opts);
-
 		this.process = spawn(this.opts.pythonPath, ['-c', pyCode]);
 
-		this.process.stderr.on('data', function (data) {
-			fs.writeFileSync('generated-code.py', pyCode);
-			throw new Error(data);
-		});
+		this.process.stderr.on('data', this.opts.stderr);
 	}
 
 	_createClass(Worker, [{
@@ -100,6 +96,9 @@ var Worker = exports.Worker = function () {
 			return {
 				pythonPath: 'python',
 				stdout: function stdout(data) {
+					return console.log(data);
+				},
+				stderr: function stderr(data) {
 					return console.log(data);
 				}
 			};
