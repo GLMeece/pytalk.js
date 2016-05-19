@@ -9,21 +9,21 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var fs = require('fs');
+var extend = require('extend');
 var spawn = require('child_process').spawn;
 
 var PYTALK_DRIVER = fs.readFileSync(__dirname + '/pytalk-driver.py', 'utf-8');
 var PYTALK_CODE_LABEL = '{_PYTALK_PYTHON_CODE_GOES_HERE_}';
 
 var Worker = exports.Worker = function () {
-	function Worker(path) {
-		var opts = arguments.length <= 1 || arguments[1] === undefined ? this._defaultOpts() : arguments[1];
-
+	function Worker(path, opts) {
 		_classCallCheck(this, Worker);
 
 		var pyCode = fs.readFileSync(path, 'utf-8');
 		pyCode = this._convertPyCode(pyCode);
 
-		this.opts = opts;
+		this.opts = extend(this._defaultOpts(), opts);
+
 		this.process = spawn(this.opts.pythonPath, ['-c', pyCode]);
 
 		this.process.stderr.on('data', function (data) {
@@ -35,14 +35,21 @@ var Worker = exports.Worker = function () {
 	_createClass(Worker, [{
 		key: 'on',
 		value: function on(eventName, callback) {
+			var _this = this;
+
 			this.process.stdout.on('data', function (data) {
 				data = data.toString('utf-8').split('\n').filter(function (s) {
 					return s.length;
 				});
 
-				var json = void 0;
-				while (json = data.shift()) {
-					var eventObj = JSON.parse(json);
+				var chunk = void 0;
+				while (chunk = data.shift()) {
+					var eventObj = _this._parseChunk(chunk);
+					if (!eventObj) {
+						_this._onStdout(chunk);
+						continue;
+					}
+
 					if (eventObj['eventName'] == eventName) {
 						callback(eventObj['data']);
 					}
@@ -71,14 +78,14 @@ var Worker = exports.Worker = function () {
 	}, {
 		key: 'method',
 		value: function method(methodName) {
-			var _this = this;
+			var _this2 = this;
 
 			return function (data, callback) {
-				_this.on('pytalkMethodDone' + methodName, function (res) {
+				_this2.on('pytalkMethodDone' + methodName, function (res) {
 					callback(res['error'], res['res']);
 				});
 
-				_this.emit('pytalkMethod' + methodName, data);
+				_this2.emit('pytalkMethod' + methodName, data);
 			};
 		}
 	}, {
@@ -91,7 +98,10 @@ var Worker = exports.Worker = function () {
 		key: '_defaultOpts',
 		value: function _defaultOpts() {
 			return {
-				pythonPath: 'python'
+				pythonPath: 'python',
+				stdout: function stdout(data) {
+					return console.log(data);
+				}
 			};
 		}
 	}, {
@@ -102,6 +112,27 @@ var Worker = exports.Worker = function () {
 			this.process.stdin.cork();
 			this.process.stdin.write(data + '\n');
 			this.process.stdin.uncork();
+		}
+	}, {
+		key: '_onStdout',
+		value: function _onStdout(data) {
+			if (this.opts.stdout == false) {
+				return;
+			}
+
+			this.opts.stdout(data);
+		}
+	}, {
+		key: '_parseChunk',
+		value: function _parseChunk(chunk) {
+			try {
+				var eventObj = JSON.parse(chunk);
+				if (eventObj['__pytalkObject__']) {
+					return eventObj;
+				}
+			} catch (e) {}
+
+			return false;
 		}
 	}]);
 

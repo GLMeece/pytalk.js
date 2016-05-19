@@ -17,6 +17,7 @@ def pytalk_on(event_name, callback=None):
 
 def pytalk_emit(event_name, data=None):
 	json_data = json.dumps({
+		'__pytalkObject__': True,
 		'eventName': event_name,
 		'data': data
 	})
