@@ -40,7 +40,7 @@ export class Worker {
 		});
 	}
 
-	send(eventName, data = null) {
+	emit(eventName, data = null) {
 		this._sendToStdin({
 			eventName: eventName,
 			data: data
@@ -61,7 +61,7 @@ export class Worker {
 				callback(res['error'], res['res']);
 			});
 
-			this.send('pytalkMethod' + methodName, data);
+			this.emit('pytalkMethod' + methodName, data);
 		};
 	}
 

@@ -50,8 +50,8 @@ var Worker = exports.Worker = function () {
 			});
 		}
 	}, {
-		key: 'send',
-		value: function send(eventName) {
+		key: 'emit',
+		value: function emit(eventName) {
 			var data = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
 			this._sendToStdin({
@@ -78,7 +78,7 @@ var Worker = exports.Worker = function () {
 					callback(res['error'], res['res']);
 				});
 
-				_this.send('pytalkMethod' + methodName, data);
+				_this.emit('pytalkMethod' + methodName, data);
 			};
 		}
 	}, {

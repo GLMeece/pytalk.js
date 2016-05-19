@@ -15,7 +15,7 @@ def pytalk_on(event_name, callback=None):
 
 	return save_callback(callback)
 
-def pytalk_send(event_name, data=None):
+def pytalk_emit(event_name, data=None):
 	json_data = json.dumps({
 		'eventName': event_name,
 		'data': data
@@ -34,7 +34,7 @@ def pytalk_method(method_name):
 			except Exception as e:
 				to_send['error'] = str(e)
 
-			pytalk_send('pytalkMethodDone' + method_name, to_send)
+			pytalk_emit('pytalkMethodDone' + method_name, to_send)
 
 		return pytalk_on('pytalkMethod' + method_name, users_method)
 

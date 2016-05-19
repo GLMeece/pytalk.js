@@ -9,7 +9,7 @@ describe('Pytalk worker', () => {
 			done();
 		});
 
-		worker.send('request', true);
+		worker.emit('request', true);
 	});
 
 	it('sends event without data', done => {
@@ -19,7 +19,7 @@ describe('Pytalk worker', () => {
 			done();
 		});
 
-		worker.send('request');
+		worker.emit('request');
 	});	
 
 	it('recieves 2 events from python', done => {
@@ -33,8 +33,8 @@ describe('Pytalk worker', () => {
 			}
 		});
 
-		worker.send('request', 1);
-		worker.send('request', 2);
+		worker.emit('request', 1);
+		worker.emit('request', 2);
 	});
 
 	it('uses pytalk_on with data', done => {
@@ -49,7 +49,7 @@ describe('Pytalk worker', () => {
 			done();
 		});
 
-		worker.send('request', testData);
+		worker.emit('request', testData);
 	});
 
 	it('uses decorator with data', done => {
@@ -65,7 +65,7 @@ describe('Pytalk worker', () => {
 			done();
 		});
 
-		worker.send('request', testData);
+		worker.emit('request', testData);
 	});
 
 	it('sends data more than once', done => {
@@ -80,9 +80,9 @@ describe('Pytalk worker', () => {
 			}
 		});
 
-		worker.send('request');
-		worker.send('request');
-		worker.send('request');
+		worker.emit('request');
+		worker.emit('request');
+		worker.emit('request');
 	});
 
 	it('sends data with newlines', done => {
@@ -99,7 +99,7 @@ describe('Pytalk worker', () => {
 			done();
 		});
 
-		worker.send('request', testData);
+		worker.emit('request', testData);
 	});
 
 	it('using method', done => {
@@ -143,7 +143,7 @@ describe('Pytalk worker', () => {
 				}
 			});			
 			
-			worker.send('request', {});
+			worker.emit('request', {});
 			workers.push(worker);
 		}
 	});
