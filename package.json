@@ -1,8 +1,12 @@
 {
-  "name": "pytalk.js",
+  "name": "pytalk",
   "version": "1.0.0",
   "description": "JS to python connector",
   "main": "index.js",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/tsim0/pytalk.js.git"
+  },
   "directories": {
     "test": "test"
   },
