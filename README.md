@@ -19,7 +19,7 @@ let worker = new pytalk.Worker('worker.py');
 let blur = worker.method('blur');
 
 blur('image.jpg', (err, blurred) => {
-	console.log(`Saved blurred file to ${blurred}`);
+    console.log(`Saved blurred file to ${blurred}`);
 });
 ```
 ######worker.py
@@ -29,8 +29,7 @@ import uuid
 
 @pytalk_method('blur')
 def blurimage(path):
-    img = cv2.imread(path)
-    img = cv2.blur(img, (20, 20))
+    img = cv2.blur(cv2.imread(path), (20, 20))
     dst = str(uuid.uuid1()) + '.jpg'
     cv2.imwrite(dst, img)
     return dst
@@ -43,15 +42,20 @@ let worker = new pytalk.Worker(scriptPath, options);
 ```
 ###Options
 * `pythonPath` - path to python binary. Default is `python`
+* `stdout` - callback called when python script prints something. Default is `console.log`
+* `stderr` - callback called on python's raised errors. Default is `console.log`
 
-####```Worker.method(methodName)```
+#####```Worker.method(methodName)```
 Use this when you need async version of some sync python function. Register python function using ```@pytalk_method(methodName)``` decorator, and use it in javascript with ```worker.method(methodName)```
 
-####```Worker.on(eventName, callback)```
-Makes `callback` be called with `data` argument every time `pytalk_emit(eventName, data` is called in python code.
+#####```Worker.on(eventName, callback)```
+Registers event handler for `eventName`. `callback` gets triggered with `data` argument every time `pytalk_emit(eventName, data)` is called in python code.
 
-####```Worker.emit(eventName, data = null)```
+#####```Worker.emit(eventName, data = null)```
 Calls python function, registered with `@pytalk_on(eventName)` decorator, or through `pytalk_on(eventName, callback)`
+
+#####```Worker.close()```
+Sends exitSignal to python's event loop. Worker closes as soon as it finishes its current job.
 
 ##License
 MIT
