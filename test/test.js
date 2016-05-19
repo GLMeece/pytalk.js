@@ -100,7 +100,20 @@ describe('Pytalk worker', () => {
 		});
 
 		worker.send('request', testData);
-	});	
+	});
+
+	it('using method', done => {
+
+		let worker = new pytalk.Worker(__dirname + '/testFunction.py');
+		let fact = worker.method('factorial');
+
+		fact(10, res => {
+			expect(res).to.equal(3628800);
+			done();
+
+			worker.close();
+		});
+	});
 
 	it('multiple worker instances', done => {		
 

@@ -24,6 +24,15 @@ def pytalk_send(event_name, data=None):
 	sys.stdout.write(json_data + '\n')
 	sys.stdout.flush()
 
+def pytalk_method(method_name):
+	def save_callback(callback):
+		def users_method(data):
+			pytalk_send('pytalkMethodDone' + method_name, callback(data))
+
+		return pytalk_on('pytalkMethod' + method_name, users_method)
+
+	return save_callback
+
 {_PYTALK_PYTHON_CODE_GOES_HERE_}
 
 while True:

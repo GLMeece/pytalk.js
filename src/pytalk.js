@@ -55,6 +55,16 @@ export class Worker {
 		this.process.stdout.pause();
 	}
 
+	method(methodName) {
+		return (data, callback) => {
+			this.on('pytalkMethodDone' + methodName, res => {
+				callback(res);
+			});
+
+			this.send('pytalkMethod' + methodName, data);
+		};
+	}
+
 	_convertPyCode(pyCode) {
 		pyCode = PYTALK_DRIVER.replace(PYTALK_CODE_LABEL, pyCode)
 		return pyCode;

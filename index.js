@@ -69,6 +69,19 @@ var Worker = exports.Worker = function () {
 			this.process.stdout.pause();
 		}
 	}, {
+		key: 'method',
+		value: function method(methodName) {
+			var _this = this;
+
+			return function (data, callback) {
+				_this.on('pytalkMethodDone' + methodName, function (res) {
+					callback(res);
+				});
+
+				_this.send('pytalkMethod' + methodName, data);
+			};
+		}
+	}, {
 		key: '_convertPyCode',
 		value: function _convertPyCode(pyCode) {
 			pyCode = PYTALK_DRIVER.replace(PYTALK_CODE_LABEL, pyCode);
