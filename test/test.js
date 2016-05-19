@@ -107,10 +107,23 @@ describe('Pytalk worker', () => {
 		let worker = new pytalk.Worker(__dirname + '/testFunction.py');
 		let fact = worker.method('factorial');
 
-		fact(10, res => {
+		fact(10, (err, res) => {
 			expect(res).to.equal(3628800);
 			done();
 
+			worker.close();
+		});
+	});
+
+	it('using method with error', done => {
+
+		let worker = new pytalk.Worker(__dirname + '/testFunctionError.py');
+		let fact = worker.method('factorial');
+
+		fact(10, (err, res) => {
+			expect(err).to.equal('integer division or modulo by zero');
+			done();
+			
 			worker.close();
 		});
 	});

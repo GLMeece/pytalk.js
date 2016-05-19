@@ -75,7 +75,7 @@ var Worker = exports.Worker = function () {
 
 			return function (data, callback) {
 				_this.on('pytalkMethodDone' + methodName, function (res) {
-					callback(res);
+					callback(res['error'], res['res']);
 				});
 
 				_this.send('pytalkMethod' + methodName, data);

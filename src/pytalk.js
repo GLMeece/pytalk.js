@@ -58,7 +58,7 @@ export class Worker {
 	method(methodName) {
 		return (data, callback) => {
 			this.on('pytalkMethodDone' + methodName, res => {
-				callback(res);
+				callback(res['error'], res['res']);
 			});
 
 			this.send('pytalkMethod' + methodName, data);

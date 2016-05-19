@@ -27,7 +27,14 @@ def pytalk_send(event_name, data=None):
 def pytalk_method(method_name):
 	def save_callback(callback):
 		def users_method(data):
-			pytalk_send('pytalkMethodDone' + method_name, callback(data))
+			to_send = {'error': False}
+
+			try:
+				to_send['res'] = callback(data)
+			except Exception as e:
+				to_send['error'] = str(e)
+
+			pytalk_send('pytalkMethodDone' + method_name, to_send)
 
 		return pytalk_on('pytalkMethod' + method_name, users_method)
 
