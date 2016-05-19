@@ -11,7 +11,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 
-var PYTALK_DRIVER = fs.readFileSync('pytalk-driver.py', 'utf-8');
+var PYTALK_DRIVER = fs.readFileSync(__dirname + '/pytalk-driver.py', 'utf-8');
 var PYTALK_CODE_LABEL = '{_PYTALK_PYTHON_CODE_GOES_HERE_}';
 
 var Worker = exports.Worker = function () {

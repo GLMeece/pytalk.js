@@ -3,7 +3,7 @@
 const fs = require('fs');
 const spawn = require('child_process').spawn;
 
-const PYTALK_DRIVER = fs.readFileSync('pytalk-driver.py', 'utf-8');
+const PYTALK_DRIVER = fs.readFileSync(__dirname + '/pytalk-driver.py', 'utf-8');
 const PYTALK_CODE_LABEL = '{_PYTALK_PYTHON_CODE_GOES_HERE_}';
 
 export class Worker {
