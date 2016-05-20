@@ -15,6 +15,8 @@ var spawn = require('child_process').spawn;
 var PYTALK_DRIVER = fs.readFileSync(__dirname + '/pytalk-driver.py', 'utf-8');
 var PYTALK_CODE_LABEL = '{_PYTALK_PYTHON_CODE_GOES_HERE_}';
 
+var workers = [];
+
 var Worker = exports.Worker = function () {
 	function Worker(path, opts) {
 		_classCallCheck(this, Worker);
@@ -22,10 +24,13 @@ var Worker = exports.Worker = function () {
 		var pyCode = fs.readFileSync(path, 'utf-8');
 		pyCode = this._convertPyCode(pyCode);
 
+		this.isClosed = false;
 		this.opts = extend(this._defaultOpts(), opts);
 		this.process = spawn(this.opts.pythonPath, ['-c', pyCode]);
 
 		this.process.stderr.on('data', this.opts.stderr);
+
+		workers.push(this);
 	}
 
 	_createClass(Worker, [{
@@ -70,6 +75,7 @@ var Worker = exports.Worker = function () {
 			});
 
 			this.process.stdout.pause();
+			this.isClosed = true;
 		}
 	}, {
 		key: 'method',
@@ -106,6 +112,10 @@ var Worker = exports.Worker = function () {
 	}, {
 		key: '_sendToStdin',
 		value: function _sendToStdin(data) {
+			if (this.isClosed) {
+				return;
+			}
+
 			data = JSON.stringify(data);
 
 			this.process.stdin.cork();
@@ -137,3 +147,11 @@ var Worker = exports.Worker = function () {
 
 	return Worker;
 }();
+
+function nodeExitHandler() {
+	workers.forEach(function (worker) {
+		return worker.close();
+	});
+}
+process.on('exit', nodeExitHandler);
+process.on('SIGINT', nodeExitHandler);
