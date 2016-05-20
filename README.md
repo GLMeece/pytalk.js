@@ -1,4 +1,6 @@
-# pytalk.js
+pytalk.js
+========================
+[![Build Status](https://travis-ci.org/tsim0/pytalk.js.svg?branch=master)](https://travis-ci.org/tsim0/pytalk.js)
 
 Pytalk is a module for bidirectional communication between Node and Python.
 
