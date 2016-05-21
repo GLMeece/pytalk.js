@@ -21,13 +21,22 @@ var Worker = exports.Worker = function () {
 	function Worker(path, opts) {
 		_classCallCheck(this, Worker);
 
-		var pyCode = fs.readFileSync(path, 'utf-8');
-		pyCode = this._convertPyCode(pyCode);
+		var pyCode = this._loadPycode(path);
 
-		this.isClosed = false;
+		// private variables
+		this._isClosed = false;
+		this._eventHandlers = {};
+
+		// options			
 		this.opts = extend(this._defaultOpts(), opts);
+		if (this.opts.stdout == false) {
+			this.opts.stdout = function () {};
+		}
+
+		// spawning python process
 		this.process = spawn(this.opts.pythonPath, ['-c', pyCode]);
 
+		this.process.stdout.on('data', this._onStdout.bind(this));
 		this.process.stderr.on('data', this.opts.stderr);
 
 		workers.push(this);
@@ -36,26 +45,11 @@ var Worker = exports.Worker = function () {
 	_createClass(Worker, [{
 		key: 'on',
 		value: function on(eventName, callback) {
-			var _this = this;
+			if (!this._eventHandlers[eventName]) {
+				this._eventHandlers[eventName] = [];
+			}
 
-			this.process.stdout.on('data', function (data) {
-				data = data.toString('utf-8').split('\n').filter(function (s) {
-					return s.length;
-				});
-
-				var chunk = void 0;
-				while (chunk = data.shift()) {
-					var eventObj = _this._parseChunk(chunk);
-					if (!eventObj) {
-						_this._onStdout(chunk);
-						continue;
-					}
-
-					if (eventObj['eventName'] == eventName) {
-						callback(eventObj['data']);
-					}
-				}
-			});
+			this._eventHandlers[eventName].push(callback);
 		}
 	}, {
 		key: 'emit',
@@ -75,26 +69,26 @@ var Worker = exports.Worker = function () {
 			});
 
 			this.process.stdout.pause();
-			this.isClosed = true;
+			this._isClosed = true;
 		}
 	}, {
 		key: 'method',
 		value: function method(methodName) {
-			var _this2 = this;
+			var _this = this;
 
 			return function (data, callback) {
-				_this2.on('pytalkMethodDone' + methodName, function (res) {
+				_this.on('pytalkMethodDone' + methodName, function (res) {
 					callback(res['error'], res['res']);
 				});
 
-				_this2.emit('pytalkMethod' + methodName, data);
+				_this.emit('pytalkMethod' + methodName, data);
 			};
 		}
 	}, {
-		key: '_convertPyCode',
-		value: function _convertPyCode(pyCode) {
-			pyCode = PYTALK_DRIVER.replace(PYTALK_CODE_LABEL, pyCode);
-			return pyCode;
+		key: '_loadPycode',
+		value: function _loadPycode(path) {
+			var pyCode = fs.readFileSync(path, 'utf-8');
+			return PYTALK_DRIVER.replace(PYTALK_CODE_LABEL, pyCode);
 		}
 	}, {
 		key: '_defaultOpts',
@@ -112,7 +106,7 @@ var Worker = exports.Worker = function () {
 	}, {
 		key: '_sendToStdin',
 		value: function _sendToStdin(data) {
-			if (this.isClosed) {
+			if (this._isClosed) {
 				return;
 			}
 
@@ -125,11 +119,34 @@ var Worker = exports.Worker = function () {
 	}, {
 		key: '_onStdout',
 		value: function _onStdout(data) {
-			if (this.opts.stdout == false) {
-				return;
-			}
+			var _this2 = this;
 
-			this.opts.stdout(data);
+			data = data.toString('utf-8').split('\n').filter(function (s) {
+				return s.length;
+			});
+
+			var chunk = void 0;
+
+			var _loop = function _loop() {
+				var eventObj = _this2._parseChunk(chunk);
+				if (!eventObj) {
+					_this2.opts.stdout(chunk);
+					return 'continue';
+				}
+
+				if (_this2._eventHandlers[eventObj['eventName']]) {
+					var cbs = _this2._eventHandlers[eventObj['eventName']];
+					cbs.forEach(function (cb) {
+						return cb(eventObj['data']);
+					});
+				}
+			};
+
+			while (chunk = data.shift()) {
+				var _ret = _loop();
+
+				if (_ret === 'continue') continue;
+			}
 		}
 	}, {
 		key: '_parseChunk',

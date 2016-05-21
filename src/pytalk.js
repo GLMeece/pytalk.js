@@ -1,4 +1,4 @@
- "use strict";
+"use strict";
 
 const fs = require('fs');
 const extend = require('extend');
@@ -12,40 +12,36 @@ let workers = [];
 export class Worker {
 
 	constructor(path, opts) {
-		let pyCode = fs.readFileSync(path, 'utf-8');
-		pyCode = this._convertPyCode(pyCode);
 
-		this.isClosed = false;
+		let pyCode = this._loadPycode(path);
+
+		// private variables
+		this._isClosed = false;
+		this._eventHandlers = {};
+	
+		// options			
 		this.opts = extend(this._defaultOpts(), opts);
+		if (this.opts.stdout == false) {
+			this.opts.stdout = () => {};
+		}
+
+		// spawning python process
 		this.process = spawn(this.opts.pythonPath, [
 			'-c', pyCode
 		]);
 
+		this.process.stdout.on('data', this._onStdout.bind(this));
 		this.process.stderr.on('data', this.opts.stderr);
 
 		workers.push(this);
 	}
 
 	on(eventName, callback) {
-		this.process.stdout.on('data', data => {
-			data = data
-				.toString('utf-8')
-				.split('\n')
-				.filter(s => s.length);
+		if (! this._eventHandlers[eventName]) {
+			this._eventHandlers[eventName] = [];
+		}
 
-			let chunk;
-			while (chunk = data.shift()) {
-				let eventObj = this._parseChunk(chunk);
-				if (! eventObj) {
-					this._onStdout(chunk);
-					continue;
-				}
-
-				if (eventObj['eventName'] == eventName) {
-					callback(eventObj['data']);
-				}
-			}
-		});
+		this._eventHandlers[eventName].push(callback);
 	}
 
 	emit(eventName, data = null) {
@@ -61,7 +57,7 @@ export class Worker {
 		});
 
 		this.process.stdout.pause();
-		this.isClosed = true;
+		this._isClosed = true;
 	}
 
 	method(methodName) {
@@ -74,9 +70,9 @@ export class Worker {
 		};
 	}
 
-	_convertPyCode(pyCode) {
-		pyCode = PYTALK_DRIVER.replace(PYTALK_CODE_LABEL, pyCode)
-		return pyCode;
+	_loadPycode(path) {
+		let pyCode = fs.readFileSync(path, 'utf-8');
+		return PYTALK_DRIVER.replace(PYTALK_CODE_LABEL, pyCode);
 	}
 
 	_defaultOpts() {
@@ -88,7 +84,7 @@ export class Worker {
 	}
 
 	_sendToStdin(data) {
-		if (this.isClosed) {
+		if (this._isClosed) {
 			return;
 		}
 
@@ -100,11 +96,24 @@ export class Worker {
 	}
 
 	_onStdout(data) {
-		if (this.opts.stdout == false) {
-			return;
+		data = data
+			.toString('utf-8')
+			.split('\n')
+			.filter(s => s.length);
+
+		let chunk;
+		while (chunk = data.shift()) {
+			let eventObj = this._parseChunk(chunk);
+			if (! eventObj) {
+				this.opts.stdout(chunk);
+				continue;
+			}
+
+			if (this._eventHandlers[eventObj['eventName']]) {
+				let cbs = this._eventHandlers[eventObj['eventName']];
+				cbs.forEach(cb => cb(eventObj['data']));
+			}
 		}
-		
-		this.opts.stdout(data);
 	}
 
 	_parseChunk(chunk) {
