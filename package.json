@@ -1,7 +1,7 @@
 {
   "name": "pytalk",
-  "version": "1.0.2",
-  "description": "JS to python connector",
+  "version": "1.0.21",
+  "description": "Bidirectional communication between Node.js and Python",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -15,7 +15,7 @@
     "test": "./node_modules/.bin/mocha --reporter spec --compilers js:babel-register"
   },
   "keywords": [
-    "js",
+    "node",
     "python",
     "connector"
   ],
