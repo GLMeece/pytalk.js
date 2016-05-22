@@ -219,3 +219,81 @@ describe('Pytalk worker', () => {
 		});
 	});
 });
+
+
+describe('Pytalk.import', () => {
+	
+	describe('import math', () => {
+
+		it('math', done => {
+			let math = pytalk.import('math');
+			done();
+
+			pytalk.close();
+		});
+
+		it('math.pi', done => {
+			let math = pytalk.import('math');
+			expect(math.pi).to.equal(3.141592653589793);
+			done();
+
+
+			pytalk.close();
+		});
+
+		it('math.sqrt sync', done => {
+			let math = pytalk.import('math');
+
+			expect(math.sqrt(144)).to.equal(12);
+			done();
+
+			pytalk.close();
+		});
+
+		it('math.sqrt async all', done => {
+			pytalk.options({
+				async: true
+			});
+
+			let math = pytalk.import('math');
+
+			math.sqrt(144, (err, res) => {
+				expect(res).to.equal(12);
+				done();
+
+				pytalk.close();
+			});
+		});
+
+	});
+
+	describe('import os', () => {
+
+		it('os', done => {
+			let os = pytalk.import('os');
+			done();
+
+			pytalk.close();
+		});
+
+		it('os.path.split', done => {
+			let os = pytalk.import('os');
+
+			expect(os.path.split('aaa/bbb')).to.deep.equal(['aaa', 'bbb']);
+			done();
+
+			pytalk.close();
+		});
+
+		it('import os.path', done => {
+			let split = pytalk.import('os.path').split;
+
+			expect(split('aaa/bbb')).to.deep.equal(['aaa', 'bbb']);
+			done();
+
+			pytalk.close();
+		});
+
+	});
+
+});

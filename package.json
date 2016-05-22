@@ -1,6 +1,6 @@
 {
   "name": "pytalk",
-  "version": "1.0.22",
+  "version": "1.0.3",
   "description": "Bidirectional communication between Node.js and Python",
   "main": "lib/pytalk.js",
   "repository": {

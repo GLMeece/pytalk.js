@@ -1,7 +1,11 @@
+"use strict";
+
 const fs = require('fs');
 const extend = require('extend');
 const deasync = require('deasync');
 const spawn = require('child_process').spawn;
+
+const PyObject = require('./PyObject');
 
 const PYTALK_DRIVER = fs.readFileSync(__dirname + '/worker-driver.py', 'utf-8');
 const PYTALK_CODE_LABEL = '{_PYTALK_PYTHON_CODE_GOES_HERE_}';
@@ -12,25 +16,30 @@ class Worker {
 
 	constructor(path, opts) {
 
-		let pyCode = this._loadPycode(path);
+		// read python code
+		let pyCode = 'pass';
+		if (typeof path !== 'undefined') {
+			pyCode = fs.readFileSync(path, 'utf-8');
+		}
+		pyCode = PYTALK_DRIVER.replace(PYTALK_CODE_LABEL, pyCode);
 
 		// private variables
 		this._isClosed = false;
 		this._eventHandlers = {};
 	
-		// options			
-		this.opts = extend(this._defaultOpts(), opts);
-		if (this.opts.stdout == false) {
-			this.opts.stdout = () => {};
+		// options
+		this._opts = extend(this._defaultOpts(), opts);
+		if (this._opts.stdout == false) {
+			this._opts.stdout = () => {};
 		}
 
 		// spawning python process
-		this.process = spawn(this.opts.pythonPath, [
+		this.process = spawn(this._opts.pythonPath, [
 			'-c', pyCode
 		]);
 
 		this.process.stdout.on('data', this._onStdout.bind(this));
-		this.process.stderr.on('data', this.opts.stderr);
+		this.process.stderr.on('data', this._opts.stderr);
 
 		workers.push(this);
 	}
@@ -73,13 +82,16 @@ class Worker {
 		return deasync(this.method(methodName));
 	}
 
-	_loadPycode(path) {
-		let pyCode = fs.readFileSync(path, 'utf-8');
-		return PYTALK_DRIVER.replace(PYTALK_CODE_LABEL, pyCode);
+	import(moduleName) {
+		let getModuleId = this.methodSync('pytalkGetModuleId');
+		let moduleId = getModuleId(moduleName);
+
+		return new PyObject(moduleId, this);
 	}
 
 	_defaultOpts() {
 		return {
+			async: false,
 			pythonPath: 'python',
 			stdout: data => console.log(data.toString('utf-8')),
 			stderr: data => console.log(data.toString('utf-8'))
@@ -108,7 +120,7 @@ class Worker {
 		while (chunk = data.shift()) {
 			let eventObj = this._parseChunk(chunk);
 			if (! eventObj) {
-				this.opts.stdout(chunk);
+				this._opts.stdout(chunk);
 				continue;
 			}
 

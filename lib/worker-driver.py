@@ -1,7 +1,14 @@
-import sys
-import json
-
 pytalk_events = {}
+
+def pytalk_is_valid_json(obj):
+	import json
+
+	try:
+		json.dumps(obj)
+	except:
+		return False
+
+	return True
 
 def pytalk_on(event_name, callback=None):
 	if event_name not in pytalk_events:
@@ -16,6 +23,9 @@ def pytalk_on(event_name, callback=None):
 	return save_callback(callback)
 
 def pytalk_emit(event_name, data=None):
+	import json
+	import sys
+
 	json_data = json.dumps({
 		'__pytalkObject__': True,
 		'eventName': event_name,
@@ -41,21 +51,71 @@ def pytalk_method(method_name):
 
 	return save_callback
 
+def pytalk_object_info(obj):
+	import json
+	import inspect
+	
+	res = {}
+	res['id'] = id(obj)
+	res['methods'] = []
+	res['properties'] = []
+
+	members = inspect.getmembers(obj)
+	for name, value in members:
+
+		# try to serialize to JSON
+		if pytalk_is_valid_json(value):
+			res['properties'].append({ 'id': id(value), 'name': name, 'value': value })
+
+		# if is callable, register pytalk_method
+		elif hasattr(value, '__call__'):
+			method_name = 'pytalkMethod' + str(id(value))
+			pytalk_method(method_name)(value)
+
+			res['methods'].append({ 'id': id(value), 'name': name })
+
+		else:
+			res['properties'].append({ 'id': id(value), 'name': name })
+
+	return res
+
+def pytalk_init_eventloop():
+	import sys
+	import json
+
+	while True:
+		
+		try:
+			data = sys.stdin.readline()
+			data = json.loads(data)
+		except:
+			continue	
+
+		if 'exitSignal' in data:
+			raise SystemExit
+
+		if data['eventName'] not in pytalk_events:
+			continue
+
+		for callback in pytalk_events[data['eventName']]:
+			callback(data['data'])
+
+@pytalk_method('pytalkGetObject')
+def pytalk_get_object(obj_id):
+	import ctypes
+
+	obj = ctypes.cast(obj_id, ctypes.py_object).value
+	return pytalk_object_info(obj)
+
+@pytalk_method('pytalkGetModuleId')
+def pytalk_get_module_id(module_name):
+	import importlib
+
+	module = importlib.import_module(module_name)
+	return id(module)
+
+# user's code
 {_PYTALK_PYTHON_CODE_GOES_HERE_}
 
-while True:
-	
-	try:
-		data = sys.stdin.readline()
-		data = json.loads(data)
-	except:
-		continue	
-
-	if 'exitSignal' in data:
-		raise SystemExit
-
-	if data['eventName'] not in pytalk_events:
-		continue
-
-	for callback in pytalk_events[data['eventName']]:
-		callback(data['data'])
+# starting event loop
+pytalk_init_eventloop()
