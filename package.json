@@ -2,7 +2,7 @@
   "name": "pytalk",
   "version": "1.0.21",
   "description": "Bidirectional communication between Node.js and Python",
-  "main": "index.js",
+  "main": "lib/pytalk.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/tsim0/pytalk.js.git"
@@ -11,7 +11,7 @@
     "test": "test"
   },
   "scripts": {
-    "build": "babel src/pytalk.js --out-file index.js && npm test",
+    "build": "babel src --out-dir lib && npm test",
     "test": "./node_modules/.bin/mocha --reporter spec --compilers js:babel-register"
   },
   "keywords": [

@@ -1,4 +1,4 @@
-let pytalk = require('../index.js');
+let pytalk = require('../lib/pytalk.js');
 let expect = require('chai').expect;
 
 describe('Pytalk worker', () => {
