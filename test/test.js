@@ -142,7 +142,7 @@ describe('Pytalk worker', () => {
 		});		
 	});
 
-	describe('method', () => {
+	describe('async method', () => {
 		it('using method', done => {
 
 			let worker = new pytalk.Worker(__dirname + '/testFunction.py');
@@ -169,6 +169,34 @@ describe('Pytalk worker', () => {
 			});
 		});
 	});
+
+	describe('sync method', () => {
+		it('using method', done => {
+
+			let worker = new pytalk.Worker(__dirname + '/testFunction.py');
+			let fact = worker.methodSync('factorial');
+
+			expect(fact(10)).to.equal(3628800);
+			done();
+
+			worker.close();
+		});
+
+		it('using method with error', done => {
+			let worker = new pytalk.Worker(__dirname + '/testFunctionError.py');
+			let fact = worker.methodSync('factorial');
+
+			try {
+				fact(10);
+			}
+			catch (err) {
+				expect(err.toString()).to.equal('integer division or modulo by zero');
+			}
+			done();
+			
+			worker.close();
+		});
+	});	
 
 	describe('stdout options', () => {
 

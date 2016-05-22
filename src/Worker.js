@@ -1,5 +1,6 @@
 const fs = require('fs');
 const extend = require('extend');
+const deasync = require('deasync');
 const spawn = require('child_process').spawn;
 
 const PYTALK_DRIVER = fs.readFileSync(__dirname + '/worker-driver.py', 'utf-8');
@@ -66,6 +67,10 @@ class Worker {
 
 			this.emit('pytalkMethod' + methodName, data);
 		};
+	}
+
+	methodSync(methodName) {
+		return deasync(this.method(methodName));
 	}
 
 	_loadPycode(path) {
