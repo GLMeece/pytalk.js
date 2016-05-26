@@ -54,10 +54,10 @@ class Worker {
 		this._eventHandlers[eventName].push(callback);
 	}
 
-	emit(eventName, data = null) {
+	emit(eventName, ...args) {
 		this._sendToStdin({
 			eventName: eventName,
-			data: data
+			args: args
 		});
 	}
 
@@ -71,7 +71,9 @@ class Worker {
 	}
 
 	method(methodName) {
-		return (data, callback) => {
+		return (...args) => {
+			let callback = args.pop();
+
 			this.on('pytalkMethodDone' + methodName, res => {
 				if (res['isPyObject']) {
 					res['res'] = new PyObject(res['res'], this);
@@ -80,7 +82,7 @@ class Worker {
 				callback(res['error'], res['res']);
 			});
 
-			this.emit('pytalkMethod' + methodName, data);
+			this.emit('pytalkMethod' + methodName, ...args);
 		};
 	}
 
@@ -144,9 +146,7 @@ class Worker {
 				return eventObj;
 			}
 		}
-		catch(e) {
-			//console.log(e);
-		}
+		catch(e) {}
 
 		return false;
 	}

@@ -97,15 +97,11 @@ def pytalk_object_info(obj):
 
 def pytalk_method(method_name):
 	def save_callback(callback):
-		def users_method(data):
+		def users_method(*args):
 			to_send = {'error': False, 'isPyObject': False}
 
 			try:
-
-				if data is None:
-					res = callback()
-				else:
-					res = callback(data)
+				res = callback(*args)
 
 				if not pytalk_is_valid_json(res):
 					res = pytalk_refs_save(res)
@@ -139,7 +135,7 @@ def pytalk_init_eventloop():
 			continue
 
 		for callback in pytalk_events[data['eventName']]:
-			callback(data['data'])
+			callback(*data['args'])
 
 
 @pytalk_method('pytalkGetObject')

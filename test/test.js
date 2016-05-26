@@ -20,7 +20,7 @@ describe('Pytalk worker', () => {
 				done();
 			});
 
-			worker.emit('request');
+			worker.emit('test_noargs');
 		});	
 
 		it('recieves 2 events from python', done => {
@@ -62,11 +62,25 @@ describe('Pytalk worker', () => {
 
 			worker.on('done', data => {
 				expect(data).to.deep.equal(testData);
-				worker.close();
 				done();
+
+				worker.close();
 			});
 
 			worker.emit('request', testData);
+		});
+
+		it('uses decorator with multiple arguments', done => {
+			let worker = new pytalk.Worker(__dirname + '/testDecorator.py');
+
+			worker.on('done', res => {
+				expect(res).to.deep.equal(6);
+				done();
+
+				worker.close();
+			});
+
+			worker.emit('three_args', 1, 2, 3);
 		});
 
 		it('handling non-pytalk stdout data', done => {
@@ -81,8 +95,9 @@ describe('Pytalk worker', () => {
 			let test = worker.method('test');
 
 			test(123, function() {
-				worker.close();
 				done();
+
+				worker.close();
 			});
 		});
 
@@ -98,9 +113,9 @@ describe('Pytalk worker', () => {
 				}
 			});
 
-			worker.emit('request');
-			worker.emit('request');
-			worker.emit('request');
+			worker.emit('test_noargs');
+			worker.emit('test_noargs');
+			worker.emit('test_noargs');
 		});
 
 		it('sends data with newlines', done => {
@@ -300,9 +315,9 @@ describe('Pytalk.import', () => {
 			let np = pytalk.import('numpy');
 			let arr = np.array([1, 2, 3]);
 
-			expect(arr.tolist(undefined)).to.deep.equal([1, 2, 3]);
+			expect(arr.tolist()).to.deep.equal([1, 2, 3]);
 			done();
-			
+
 			pytalk.close();
 		});
 
