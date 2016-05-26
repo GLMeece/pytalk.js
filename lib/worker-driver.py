@@ -1,4 +1,4 @@
-pytalk_refs = {}
+pytalk_refs = {'__builtins__': __builtins__}
 pytalk_events = {}
 
 def pytalk_refs_save(obj):

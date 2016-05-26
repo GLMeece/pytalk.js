@@ -43,6 +43,9 @@ class Worker {
 		this.process.stdout.on('data', this._onStdout.bind(this));
 		this.process.stderr.on('data', this._opts.stderr);
 
+		// builtins
+		this.builtins = new PyObject('__builtins__', this);
+
 		workers.push(this);
 	}
 

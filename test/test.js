@@ -236,31 +236,31 @@ describe('Pytalk.import', () => {
 	describe('import math', () => {
 
 		it('math', done => {
+			pytalk.init();
+
 			let math = pytalk.import('math');
 			done();
-
-			pytalk.close();
 		});
 
 		it('math.pi', done => {
+			pytalk.init();
+
 			let math = pytalk.import('math');
 			expect(math.pi).to.equal(3.141592653589793);
 			done();
-
-			pytalk.close();
 		});
 
 		it('math.sqrt sync', done => {
+			pytalk.init();
+
 			let math = pytalk.import('math');
 
 			expect(math.sqrt(144)).to.equal(12);
 			done();
-
-			pytalk.close();
 		});
 
 		it('math.sqrt async all', done => {
-			pytalk.options({
+			pytalk.init({
 				async: true
 			});
 
@@ -269,68 +269,76 @@ describe('Pytalk.import', () => {
 			math.sqrt(144, (err, res) => {
 				expect(res).to.equal(12);
 				done();
-
-				pytalk.close();
 			});
 		});
 	});
 
 	describe('import os', () => {
 		it('os', done => {
+			pytalk.init();
 			let os = pytalk.import('os');
 			done();
-
-			pytalk.close();
 		});
 
 		it('os.path.split', done => {
+			pytalk.init();
 			let os = pytalk.import('os');
 
 			expect(os.path.split('aaa/bbb')).to.deep.equal(['aaa', 'bbb']);
 			done();
-
-			pytalk.close();
 		});
 
 		it('import os.path', done => {
+			pytalk.init();
 			let split = pytalk.import('os.path').split;
 
 			expect(split('aaa/bbb')).to.deep.equal(['aaa', 'bbb']);
 			done();
-
-			pytalk.close();
 		});
 	});
 
 	describe('import numpy', () => {
 		
 		it('numpy', done => {
+			pytalk.init();
 			let np = pytalk.import('numpy');
 			done();
-
-			pytalk.close();
 		});
 
 		it('numpy.array.tolist', done => {
+			pytalk.init();
 			let np = pytalk.import('numpy');
 			let arr = np.array([1, 2, 3]);
 
 			expect(arr.tolist()).to.deep.equal([1, 2, 3]);
 			done();
-
-			pytalk.close();
 		});
 
 		it('numpy.sqrt(nparray)', done => {
+			pytalk.init();
 			let np = pytalk.import('numpy');
 			let arr = np.array([1, 4, 9]);
 			arr = np.sqrt(arr);
 
 			expect(arr.tolist()).to.deep.equal([1.0, 2.0, 3.0]);
 			done();
+		});
+	});
 
-			pytalk.close();
+	describe('builtins', () => {
+		
+		it('max', done => {
+			pytalk.init();
+
+			expect(pytalk.max([1, 5, 2])).to.equal(5);
+			done();
 		});
 
+		it('range sum', done => {
+			pytalk.init();
+
+			expect(pytalk.sum(pytalk.range(100))).to.equal(4950);
+			done();
+		});
 	});
 });

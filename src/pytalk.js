@@ -1,33 +1,35 @@
 "use strict";
 
+const extend = require('extend');
+
 const Worker = require('./Worker');
 const PyObject = require('./PyObject');
 
-let workerInstance, workerOptions;
+let workerInstance;
 
-const pytalk = module.exports = {
+let pytalk = {
 	Worker: Worker,
 
 	import(moduleName) {
-		if (! workerInstance) {
-			workerInstance = new Worker(undefined, workerOptions);
+		return workerInstance.import(moduleName);
+	},
+
+	init(opts) {
+		if (workerInstance) {
+			this.close();
 		}
 
-		return workerInstance.import(moduleName);
+		workerInstance = new Worker(undefined, opts);
+		extend(this, workerInstance.builtins);
 	},
 
 	close() {
 		workerInstance.close();
-		
-		workerInstance = undefined;
-		workerOptions = undefined;
+		workerInstance = null;
 
-		return pytalk;
-	},
-
-	options(opts) {
-		workerOptions = opts;
 		return pytalk;
 	}
-
 };
+
+
+module.exports = pytalk;
