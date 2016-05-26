@@ -2,7 +2,6 @@ let pytalk = require('../lib/pytalk.js');
 let expect = require('chai').expect;
 
 describe('Pytalk worker', () => {
-
 	describe('basic in-out', () => {
 		it('recieves event from python', done => {
 			let worker = new pytalk.Worker(__dirname + '/testSimple.py');
@@ -197,7 +196,7 @@ describe('Pytalk worker', () => {
 			worker.close();
 		});
 	});	
-
+	
 	describe('stdout options', () => {
 
 		it('callback', done => {
@@ -205,24 +204,20 @@ describe('Pytalk worker', () => {
 			let worker = new pytalk.Worker(__dirname + '/testNonpytalkPrints.py', {
 				stdout: data => {
 					expect(data).to.equal('hello world!');
-
-					worker.close();
 					done();
 				}
 			});
 
 			let test = worker.method('test');
-			test(123, (err, res) => {
-
+			test(123, () => {
+				worker.close();
 			});
-
 		});
 	});
 });
 
-
 describe('Pytalk.import', () => {
-	
+
 	describe('import math', () => {
 
 		it('math', done => {
@@ -236,7 +231,6 @@ describe('Pytalk.import', () => {
 			let math = pytalk.import('math');
 			expect(math.pi).to.equal(3.141592653589793);
 			done();
-
 
 			pytalk.close();
 		});
@@ -264,11 +258,9 @@ describe('Pytalk.import', () => {
 				pytalk.close();
 			});
 		});
-
 	});
 
 	describe('import os', () => {
-
 		it('os', done => {
 			let os = pytalk.import('os');
 			done();
@@ -293,7 +285,26 @@ describe('Pytalk.import', () => {
 
 			pytalk.close();
 		});
-
 	});
 
+	describe('import numpy', () => {
+		
+		it('numpy', done => {
+			let np = pytalk.import('numpy');
+			done();
+
+			pytalk.close();
+		});
+
+		it('numpy.array.tolist', done => {
+			let np = pytalk.import('numpy');
+			let arr = np.array([1, 2, 3]);
+
+			expect(arr.tolist(undefined)).to.deep.equal([1, 2, 3]);
+			done();
+			
+			pytalk.close();
+		});
+
+	});
 });

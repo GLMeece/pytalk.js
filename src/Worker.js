@@ -5,6 +5,7 @@ const extend = require('extend');
 const deasync = require('deasync');
 const spawn = require('child_process').spawn;
 
+const utils = require('./utils');
 const PyObject = require('./PyObject');
 
 const PYTALK_DRIVER = fs.readFileSync(__dirname + '/worker-driver.py', 'utf-8');
@@ -35,6 +36,7 @@ class Worker {
 
 		// spawning python process
 		this.process = spawn(this._opts.pythonPath, [
+			'-u',
 			'-c', pyCode
 		]);
 
@@ -71,6 +73,10 @@ class Worker {
 	method(methodName) {
 		return (data, callback) => {
 			this.on('pytalkMethodDone' + methodName, res => {
+				if (res['isPyObject']) {
+					res['res'] = new PyObject(res['res'], this);
+				}
+
 				callback(res['error'], res['res']);
 			});
 
@@ -133,12 +139,14 @@ class Worker {
 
 	_parseChunk(chunk) {
 		try {
-			var eventObj = JSON.parse(chunk);
+			var eventObj = utils.parseJSON(chunk);
 			if (eventObj['__pytalkObject__']) {
 				return eventObj;
 			}
 		}
-		catch(e) {}
+		catch(e) {
+			//console.log(e);
+		}
 
 		return false;
 	}

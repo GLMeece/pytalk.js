@@ -17,9 +17,9 @@ class PyObject {
 		let registerProperty = _registerProperty.bind(this);
 		let getObjInfoFromPython = _getObjInfoFromPython.bind(this);
 
-		// set object methods and properties
-		let info = getObjInfoFromPython(id);
+		let info = getObjInfoFromPython(id);		
 
+		// set object methods and properties
 		info.methods.forEach(registerMethod);
 		info.properties.forEach(registerProperty);
 	}
