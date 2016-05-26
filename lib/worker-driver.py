@@ -132,6 +132,7 @@ def pytalk_init_eventloop():
 			raise SystemExit
 
 		if data['eventName'] not in pytalk_events:
+			print "WARNING: no handler for event {}".format(data['eventName'])
 			continue
 
 		for callback in pytalk_events[data['eventName']]:
