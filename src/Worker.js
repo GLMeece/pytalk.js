@@ -55,6 +55,17 @@ class Worker {
 	}
 
 	emit(eventName, ...args) {
+		args = args.map(arg => {
+			if (arg instanceof PyObject) {
+				return {
+					id: arg.__pytalk.id,
+					isPyObject: true
+				};
+			}
+
+			return arg;
+		});
+
 		this._sendToStdin({
 			eventName: eventName,
 			args: args

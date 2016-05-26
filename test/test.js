@@ -321,5 +321,16 @@ describe('Pytalk.import', () => {
 			pytalk.close();
 		});
 
+		it('numpy.sqrt(nparray)', done => {
+			let np = pytalk.import('numpy');
+			let arr = np.array([1, 4, 9]);
+			arr = np.sqrt(arr);
+
+			expect(arr.tolist()).to.deep.equal([1.0, 2.0, 3.0]);
+			done();
+
+			pytalk.close();
+		});
+
 	});
 });

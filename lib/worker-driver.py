@@ -117,6 +117,15 @@ def pytalk_method(method_name):
 
 	return save_callback
 
+def pytalk_call_with_args(cb, args):
+	def real_arg(arg):
+		if isinstance(a, dict):
+			if 'isPyObject' in a:
+				return pytalk_refs_get(a['id'])
+		return arg
+
+	cb(*[real_arg(a) for a in args])
+
 def pytalk_init_eventloop():
 	import sys
 	import json
@@ -136,17 +145,14 @@ def pytalk_init_eventloop():
 			continue
 
 		for callback in pytalk_events[data['eventName']]:
-			callback(*data['args'])
-
+			pytalk_call_with_args(callback, data['args'])
 
 @pytalk_method('pytalkGetObject')
 def pytalk_get_object(obj_id):
 	import ctypes
 
 	obj = pytalk_refs_get(obj_id)
-	info = pytalk_object_info(obj)
-
-	return info
+	return pytalk_object_info(obj)
 
 @pytalk_method('pytalkGetModuleId')
 def pytalk_get_module_id(module_name):
