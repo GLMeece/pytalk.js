@@ -25,9 +25,10 @@ class Worker {
 		pyCode = PYTALK_DRIVER.replace(PYTALK_CODE_LABEL, pyCode);
 
 		// private variables
+		this._serialized = '';
 		this._isClosed = false;
 		this._eventHandlers = {};
-	
+
 		// options
 		this._opts = extend(this._defaultOpts(), opts);
 		if (this._opts.stdout == false) {
@@ -82,6 +83,7 @@ class Worker {
 
 		this.process.stdout.pause();
 		this._isClosed = true;
+		this._serialized = ''		
 	}
 
 	method(methodName) {
@@ -139,23 +141,30 @@ class Worker {
 			.filter(s => s.length);
 
 		let chunk;
+
 		while (chunk = data.shift()) {
-			let eventObj = this._parseChunk(chunk);
-			if (! eventObj) {
+			let messageObj = this._parseChunk(chunk);
+			if (! messageObj) {
 				this._opts.stdout(chunk);
 				continue;
 			}
 
-			if (this._eventHandlers[eventObj['eventName']]) {
-				let cbs = this._eventHandlers[eventObj['eventName']];
-				cbs.forEach(cb => cb(eventObj['data']));
+			this._serialized += messageObj.serialized;
+			if (messageObj.isFinal) {
+				let eventObj = utils.parseJSON(this._serialized);
+				this._serialized = '';
+
+				if (this._eventHandlers[eventObj['eventName']]) {
+					let cbs = this._eventHandlers[eventObj['eventName']];
+					cbs.forEach(cb => cb(eventObj['data']));
+				}
 			}
 		}
 	}
 
 	_parseChunk(chunk) {
 		try {
-			var eventObj = utils.parseJSON(chunk);
+			var eventObj = JSON.parse(chunk);
 			if (eventObj['__pytalkObject__']) {
 				return eventObj;
 			}

@@ -20,7 +20,7 @@ let pytalk = {
 		}
 
 		workerInstance = new Worker(undefined, opts);
-		extend(this, workerInstance.builtins);
+		return extend(this, workerInstance.builtins);
 	},
 
 	close() {

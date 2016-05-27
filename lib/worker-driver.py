@@ -43,14 +43,26 @@ def pytalk_emit(event_name, data=None):
 	import json
 	import sys
 
-	json_data = json.dumps({
-		'__pytalkObject__': True,
+	# send in chunks of 1000 chars
+	buff_size = 1000
+
+	serialized = json.dumps({
 		'eventName': event_name,
 		'data': data
 	})
 
-	sys.stdout.write(json_data + '\n')
-	sys.stdout.flush()
+	for i in range(0, len(serialized), buff_size):
+		chunk = serialized[i : i + buff_size]
+		is_final = i + buff_size >= len(serialized)
+
+		message = json.dumps({
+			'__pytalkObject__': True,
+			'isFinal': is_final,
+			'serialized': chunk
+		})
+
+		sys.stdout.write(message + '\n')
+		sys.stdout.flush()
 
 def pytalk_object_info(obj):
 	import math

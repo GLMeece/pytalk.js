@@ -2,6 +2,7 @@ let pytalk = require('../lib/pytalk.js');
 let expect = require('chai').expect;
 
 describe('Pytalk worker', () => {
+
 	describe('basic in-out', () => {
 		it('recieves event from python', done => {
 			let worker = new pytalk.Worker(__dirname + '/testSimple.py');
@@ -21,7 +22,7 @@ describe('Pytalk worker', () => {
 			});
 
 			worker.emit('test_noargs');
-		});	
+		});
 
 		it('recieves 2 events from python', done => {
 			let worker = new pytalk.Worker(__dirname + '/testSimple.py');
@@ -232,18 +233,17 @@ describe('Pytalk worker', () => {
 });
 
 describe('Pytalk.import', () => {
-
 	describe('import math', () => {
 
 		it('math', done => {
-			pytalk.init();
+			pytalk = pytalk.init();
 
 			let math = pytalk.import('math');
 			done();
 		});
 
 		it('math.pi', done => {
-			pytalk.init();
+			pytalk = pytalk.init();
 
 			let math = pytalk.import('math');
 			expect(math.pi).to.equal(3.141592653589793);
@@ -251,7 +251,7 @@ describe('Pytalk.import', () => {
 		});
 
 		it('math.sqrt sync', done => {
-			pytalk.init();
+			pytalk = pytalk.init();
 
 			let math = pytalk.import('math');
 
@@ -275,13 +275,13 @@ describe('Pytalk.import', () => {
 
 	describe('import os', () => {
 		it('os', done => {
-			pytalk.init();
+			pytalk = pytalk.init();
 			let os = pytalk.import('os');
 			done();
 		});
 
 		it('os.path.split', done => {
-			pytalk.init();
+			pytalk = pytalk.init();
 			let os = pytalk.import('os');
 
 			expect(os.path.split('aaa/bbb')).to.deep.equal(['aaa', 'bbb']);
@@ -289,7 +289,7 @@ describe('Pytalk.import', () => {
 		});
 
 		it('import os.path', done => {
-			pytalk.init();
+			pytalk = pytalk.init();
 			let split = pytalk.import('os.path').split;
 
 			expect(split('aaa/bbb')).to.deep.equal(['aaa', 'bbb']);
@@ -300,13 +300,13 @@ describe('Pytalk.import', () => {
 	describe('import numpy', () => {
 		
 		it('numpy', done => {
-			pytalk.init();
+			pytalk = pytalk.init();
 			let np = pytalk.import('numpy');
 			done();
 		});
 
 		it('numpy.array.tolist', done => {
-			pytalk.init();
+			pytalk = pytalk.init();
 			let np = pytalk.import('numpy');
 			let arr = np.array([1, 2, 3]);
 
@@ -315,7 +315,7 @@ describe('Pytalk.import', () => {
 		});
 
 		it('numpy.sqrt(nparray)', done => {
-			pytalk.init();
+			pytalk = pytalk.init();
 			let np = pytalk.import('numpy');
 			let arr = np.array([1, 4, 9]);
 			arr = np.sqrt(arr);
@@ -325,17 +325,29 @@ describe('Pytalk.import', () => {
 		});
 	});
 
+	describe('import cv2', () => {
+		
+		it('cv2', done => {
+			pytalk = pytalk.init({
+				stdout: data => console.log('LEN:', data.length)
+			});
+
+			let cv2 = pytalk.import('cv2');
+			done();
+		}).timeout(5000);
+	});
+
 	describe('builtins', () => {
 		
 		it('max', done => {
-			pytalk.init();
+			pytalk = pytalk.init();
 
 			expect(pytalk.max([1, 5, 2])).to.equal(5);
 			done();
 		});
 
 		it('range sum', done => {
-			pytalk.init();
+			pytalk = pytalk.init();
 
 			expect(pytalk.sum(pytalk.range(100))).to.equal(4950);
 			done();

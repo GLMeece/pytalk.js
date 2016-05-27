@@ -4,7 +4,9 @@ node_js:
 virtualenv:
   system_site_packages: true
 before_install:
+  - sudo apt-get install -qq python-dev
   - sudo apt-get install -qq python-numpy
+  - sudo apt-get install -qq python-opencv
 install:
   - npm install
 script:
