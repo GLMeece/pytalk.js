@@ -1,4 +1,5 @@
-let pytalk = require('../lib/pytalk.js');
+import pytalk from '../lib/pytalk.js';
+
 let expect = require('chai').expect;
 
 describe('Pytalk worker', () => {
@@ -232,39 +233,39 @@ describe('Pytalk worker', () => {
 	});
 });
 
-describe('Pytalk.import', () => {
+describe('worker.import', () => {
 	describe('import math', () => {
 
 		it('math', done => {
-			pytalk = pytalk.init();
+			let worker = pytalk.worker();
 
-			let math = pytalk.import('math');
+			let math = worker.import('math');
 			done();
 		});
 
 		it('math.pi', done => {
-			pytalk = pytalk.init();
+			let worker = pytalk.worker();
 
-			let math = pytalk.import('math');
+			let math = worker.import('math');
 			expect(math.pi).to.equal(3.141592653589793);
 			done();
 		});
 
 		it('math.sqrt sync', done => {
-			pytalk = pytalk.init();
+			let worker = pytalk.worker();
 
-			let math = pytalk.import('math');
+			let math = worker.import('math');
 
 			expect(math.sqrt(144)).to.equal(12);
 			done();
 		});
 
 		it('math.sqrt async all', done => {
-			pytalk.init({
+			let worker = pytalk.worker({
 				async: true
 			});
 
-			let math = pytalk.import('math');
+			let math = worker.import('math');
 
 			math.sqrt(144, (err, res) => {
 				expect(res).to.equal(12);
@@ -275,22 +276,22 @@ describe('Pytalk.import', () => {
 
 	describe('import os', () => {
 		it('os', done => {
-			pytalk = pytalk.init();
-			let os = pytalk.import('os');
+			let worker = pytalk.worker();
+			let os = worker.import('os');
 			done();
 		});
 
 		it('os.path.split', done => {
-			pytalk = pytalk.init();
-			let os = pytalk.import('os');
+			let worker = pytalk.worker();
+			let os = worker.import('os');
 
 			expect(os.path.split('aaa/bbb')).to.deep.equal(['aaa', 'bbb']);
 			done();
 		});
 
 		it('import os.path', done => {
-			pytalk = pytalk.init();
-			let split = pytalk.import('os.path').split;
+			let worker = pytalk.worker();
+			let split = worker.import('os.path').split;
 
 			expect(split('aaa/bbb')).to.deep.equal(['aaa', 'bbb']);
 			done();
@@ -300,14 +301,14 @@ describe('Pytalk.import', () => {
 	describe('import numpy', () => {
 		
 		it('numpy', done => {
-			pytalk = pytalk.init();
-			let np = pytalk.import('numpy');
+			let worker = pytalk.worker();
+			let np = worker.import('numpy');
 			done();
 		});
 
 		it('numpy.array.tolist', done => {
-			pytalk = pytalk.init();
-			let np = pytalk.import('numpy');
+			let worker = pytalk.worker();
+			let np = worker.import('numpy');
 			let arr = np.array([1, 2, 3]);
 
 			expect(arr.tolist()).to.deep.equal([1, 2, 3]);
@@ -315,8 +316,8 @@ describe('Pytalk.import', () => {
 		});
 
 		it('numpy.sqrt(nparray)', done => {
-			pytalk = pytalk.init();
-			let np = pytalk.import('numpy');
+			let worker = pytalk.worker();
+			let np = worker.import('numpy');
 			let arr = np.array([1, 4, 9]);
 			arr = np.sqrt(arr);
 
@@ -328,28 +329,26 @@ describe('Pytalk.import', () => {
 	describe('import cv2', () => {
 		
 		it('cv2', done => {
-			pytalk = pytalk.init({
-				stdout: data => console.log('LEN:', data.length)
-			});
+			let worker = pytalk.worker();
 
-			let cv2 = pytalk.import('cv2');
+			let cv2 = worker.import('cv2');
 			done();
-		}).timeout(5000);
+		});
 	});
 
 	describe('builtins', () => {
 		
 		it('max', done => {
-			pytalk = pytalk.init();
+			let worker = pytalk.worker();
 
-			expect(pytalk.max([1, 5, 2])).to.equal(5);
+			expect(worker.builtins.max([1, 5, 2])).to.equal(5);
 			done();
 		});
 
 		it('range sum', done => {
-			pytalk = pytalk.init();
+			let worker = pytalk.worker();
 
-			expect(pytalk.sum(pytalk.range(100))).to.equal(4950);
+			expect(worker.builtins.sum(worker.builtins.range(100))).to.equal(4950);
 			done();
 		});
 	});

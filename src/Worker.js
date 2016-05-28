@@ -17,6 +17,8 @@ class Worker {
 
 	constructor(path, opts) {
 
+		[path, opts] = this._constructorArgs(path, opts);
+
 		// read python code
 		let pyCode = 'pass';
 		if (typeof path !== 'undefined') {
@@ -172,6 +174,21 @@ class Worker {
 		catch(e) {}
 
 		return false;
+	}
+
+	_constructorArgs(path, opts) {
+		let p, o;
+
+		if (typeof path == 'string') {
+			p = path;
+			o = opts;
+		}
+		else if (typeof path == 'object') {
+			p = undefined;
+			o = path;
+		}
+
+		return [p, o];
 	}
 }
 

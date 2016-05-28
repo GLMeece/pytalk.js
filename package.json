@@ -1,6 +1,6 @@
 {
   "name": "pytalk",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Bidirectional communication between Node.js and Python",
   "main": "lib/pytalk.js",
   "repository": {
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "babel src --out-dir lib && npm test",
-    "test": "./node_modules/.bin/mocha --reporter spec --compilers js:babel-register"
+    "test": "./node_modules/.bin/mocha --reporter spec --timeout 8000 --compilers js:babel-register"
   },
   "keywords": [
     "node",

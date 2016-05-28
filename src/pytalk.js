@@ -5,31 +5,10 @@ const extend = require('extend');
 const Worker = require('./Worker');
 const PyObject = require('./PyObject');
 
-let workerInstance;
+export default {
+	Worker,
 
-let pytalk = {
-	Worker: Worker,
-
-	import(moduleName) {
-		return workerInstance.import(moduleName);
-	},
-
-	init(opts) {
-		if (workerInstance) {
-			this.close();
-		}
-
-		workerInstance = new Worker(undefined, opts);
-		return extend(this, workerInstance.builtins);
-	},
-
-	close() {
-		workerInstance.close();
-		workerInstance = null;
-
-		return pytalk;
+	worker(...args) {
+		return new Worker(...args);
 	}
 };
-
-
-module.exports = pytalk;
