@@ -1,4 +1,4 @@
-import pytalk from '../lib/pytalk.js';
+const pytalk = require('../lib/pytalk.js');
 
 let expect = require('chai').expect;
 

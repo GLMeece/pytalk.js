@@ -20,7 +20,7 @@ npm install pytalk
 ```javascript
 index.js                                      |  worker.py
 ------------------------------------------------------------------------------------------------
-import pytalk from 'pytalk';                  |  import cv2
+const pytalk = require('pytalk');             |  import cv2
                                               |  import uuid
                                               |  
 let worker = pytalk.worker('worker.py');      |  @pytalk_method('blur')
@@ -34,7 +34,7 @@ blur('image.jpg', (err, blurred) => {         |      dst = str(uuid.uuid1()) + '
 2) Importing modules using proxy PyObjects.
 
 ```javascript
-import pytalk from 'pytalk';
+const pytalk = require('pytalk');
 
 let worker = pytalk.worker();      // Create python process
 
