@@ -67,7 +67,10 @@ or, which is the same `pytalk.worker(scriptPath, options)`
 * `stderr` - callback called on python's raised errors. Default is `console.log`
 
 #####```Worker.method(methodName)```
-Use this when you need async version of some sync python function. Register python function using ```@pytalk_method(methodName)``` decorator, and use it in javascript with ```worker.method(methodName)```
+Returns a `function(arg1, ..., argN, callback)`. `args` are the args passed to the python method, registered using ```@pytalk_method(methodName)``` decorator. `callback` is a error-first function, called when python method finishes its work. Use this when you need async version of some sync python function. 
+
+#####```Worker.methodSync(methodName)```
+Same thing as `Worker.method`, except it waits until python method gets its work done, and returns whatever python function returns. Uses [deasync](https://github.com/abbr/deasync) under the hood.
 
 #####```Worker.on(eventName, callback)```
 Registers event handler for `eventName`. `callback` gets triggered with `(err, args)` passed every time `pytalk_emit(eventName, args)` is called in python code.
