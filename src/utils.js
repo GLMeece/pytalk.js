@@ -1,10 +1,6 @@
 module.exports = {
 	parseJSON(serialized) {
 		return JSON.parse(serialized, (key, value) => {
-			if (key !== 'value') {
-				return value;
-			}
-
 			switch (value) {
 				case '__pytalk__PositiveInfinity':
 					return Infinity;

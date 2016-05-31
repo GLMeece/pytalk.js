@@ -27,6 +27,34 @@ def pytalk_is_valid_json(obj):
 
 	return True
 
+def pytalk_fix_nan(obj, do_copy=False):
+	import math
+	import copy
+
+	if do_copy:
+		obj = copy.deepcopy(obj)
+
+	if type(obj) is tuple:
+		obj = list(obj)
+
+	if type(obj) is list:
+		for i, elem in enumerate(obj):
+			obj[i] = pytalk_fix_nan(elem)
+
+	elif type(obj) is dict:
+		for key, value in obj.iteritems():
+			obj[key] = pytalk_fix_nan(value)
+
+	else:
+		if obj == float('inf'):
+			obj = '__pytalk__PositiveInfinity'
+		elif obj == float('-inf'):
+			obj = '__pytalk__NegativeInfinity'
+		elif isinstance(obj, float) and math.isnan(obj):
+			obj = '__pytalk__NaN'	
+
+	return obj
+
 def pytalk_on(event_name, callback=None):
 	if event_name not in pytalk_events:
 		pytalk_events[event_name] = []
@@ -46,10 +74,10 @@ def pytalk_emit(event_name, data=None):
 	# send in chunks of 1000 chars
 	buff_size = 1000
 
-	serialized = json.dumps({
+	serialized = json.dumps(pytalk_fix_nan({
 		'eventName': event_name,
 		'data': data
-	})
+	}))
 
 	for i in range(0, len(serialized), buff_size):
 		chunk = serialized[i : i + buff_size]
@@ -65,7 +93,6 @@ def pytalk_emit(event_name, data=None):
 		sys.stdout.flush()
 
 def pytalk_object_info(obj):
-	import math
 	import inspect
 	
 	res = {}
@@ -77,33 +104,20 @@ def pytalk_object_info(obj):
 
 	for name, value in members:
 
-		is_valid = pytalk_is_valid_json(value)
-		#is_func = callable(value)
-		is_func = hasattr(value, '__call__')
-
-		val_uid = pytalk_refs_save(value)
-		
-		# try to serialize to JSON
-		if is_valid:
-			# special case for NaN values
-			if value == float('inf'):
-				value = '__pytalk__PositiveInfinity'
-			elif value == float('-inf'):
-				value = '__pytalk__NegativeInfinity'
-			elif isinstance(value, float) and math.isnan(value):
-				value = '__pytalk__NaN'
-
-			res['properties'].append({ 'id': val_uid, 'name': name, 'value': value })
-
-		# if is callable, register pytalk_method
-		elif is_func:
-			method_name = 'pytalkMethod' + str(val_uid)
-			pytalk_method(method_name)(value)
-
-			res['methods'].append({ 'id': val_uid, 'name': name })
-
+		if pytalk_is_valid_json(value):
+			value = pytalk_fix_nan(value, do_copy=True)
+			res['properties'].append({ 'name': name, 'value': value })
 		else:
-			res['properties'].append({ 'id': val_uid, 'name': name })
+			val_uid = pytalk_refs_save(value)
+
+			# if is callable, register pytalk_method
+			if callable(value):
+				method_name = 'pytalkMethod' + str(val_uid)
+				pytalk_method(method_name)(value)
+
+				res['methods'].append({ 'id': val_uid, 'name': name })
+			else:
+				res['properties'].append({ 'id': val_uid, 'name': name })
 
 	return res
 

@@ -158,6 +158,30 @@ describe('Pytalk worker', () => {
 		});		
 	});
 
+	describe('NaN', () => {	
+
+		it('function returns Infinity', done => {
+			let worker = new pytalk.Worker(__dirname + '/testFunction.py');
+			let test = worker.methodSync('NaN_test1');
+			
+			expect(test()).to.equal(Infinity);
+			done();
+			
+			worker.close();
+		});
+
+		it('function returns object with Infinity property', done => {
+			let worker = new pytalk.Worker(__dirname + '/testFunction.py');
+			let test = worker.methodSync('NaN_test2');
+			
+			expect(test().prop).to.equal(Infinity);
+			done();
+			
+			worker.close();
+		});
+
+	});
+
 	describe('async method', () => {
 		it('using method', done => {
 
