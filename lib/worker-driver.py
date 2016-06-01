@@ -1,4 +1,4 @@
-pytalk_refs = {'__builtins__': __builtins__}
+pytalk_refs = None
 pytalk_events = {}
 
 def pytalk_refs_save(obj):
@@ -12,6 +12,11 @@ def pytalk_refs_save(obj):
 
 def pytalk_refs_get(uid):
 	return pytalk_refs[uid]
+
+def pytalk_refs_default():
+	return {
+		'__builtins__': __builtins__
+	}
 
 def pytalk_is_valid_json(obj):
 	import json
@@ -186,6 +191,14 @@ def pytalk_get_module_id(module_name):
 
 	module = importlib.import_module(module_name)
 	return pytalk_refs_save(module)
+
+@pytalk_method('pytalkRefsReset')
+def pytalk_refs_reset():
+	global pytalk_refs
+	pytalk_refs = pytalk_refs_default()
+
+# set default refs
+pytalk_refs = pytalk_refs_default()
 
 # user's code
 {_PYTALK_PYTHON_CODE_GOES_HERE_}

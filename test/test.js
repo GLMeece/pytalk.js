@@ -137,7 +137,7 @@ describe('Pytalk worker', () => {
 			worker.emit('request', testData);
 		});
 
-		it('multiple worker instances', done => {		
+		it('multiple worker instances', done => {
 
 			let workers = [];
 			let workersNum = 10;
@@ -158,8 +158,7 @@ describe('Pytalk worker', () => {
 		});		
 	});
 
-	describe('NaN', () => {	
-
+	describe('NaN', () => {
 		it('function returns Infinity', done => {
 			let worker = new pytalk.Worker(__dirname + '/testFunction.py');
 			let test = worker.methodSync('NaN_test1');
@@ -179,7 +178,6 @@ describe('Pytalk worker', () => {
 			
 			worker.close();
 		});
-
 	});
 
 	describe('async method', () => {
@@ -284,7 +282,7 @@ describe('worker.import', () => {
 			done();
 		});
 
-		it('math.sqrt async all', done => {
+		it('math.sqrt async', done => {
 			let worker = pytalk.worker({
 				async: true
 			});
@@ -376,4 +374,17 @@ describe('worker.import', () => {
 			done();
 		});
 	});
+
+	describe('unrefAll', () => {
+		
+		it('call', done => {
+			let worker = pytalk.worker();
+
+			let np = worker.import('numpy');
+			worker.unrefAll();
+			
+			done();
+		});
+	});	
+
 });

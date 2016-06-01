@@ -115,6 +115,11 @@ class Worker {
 		return new PyObject(moduleId, this);
 	}
 
+	unrefAll() {
+		let resetRefs = this.methodSync('pytalkRefsReset');
+		resetRefs();
+	}
+
 	_defaultOpts() {
 		return {
 			async: false,

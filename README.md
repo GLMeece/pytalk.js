@@ -5,7 +5,7 @@ pytalk.js
 Pytalk is a module for bidirectional communication between Node and Python.
 
 It lets you create Python process, and communicate with it via standard streams. Every message passed through pytalk gets serialized into JSON.
-Before starting the process, Pytalk modifies the python code, instantiating an event loop and allowing you to send and recieve messages with `pytalk_emit`, `pytalk_on` or registering python method with `pytalk_method`.
+Before starting the process, Pytalk modifies the Python code, instantiating an event loop and allowing you to send and recieve messages with `pytalk_emit`, `pytalk_on` or registering Python method with `pytalk_method`.
 
 ### Install
 Install through npm
@@ -15,7 +15,7 @@ npm install pytalk
 
 ### Usage
 
-1) Using a worker script, calling registered python method asynchronously
+1) Using a worker script, calling registered Python method asynchronously
 
 ```javascript
 index.js                                      |  worker.py
@@ -36,7 +36,7 @@ blur('image.jpg', (err, blurred) => {         |      dst = str(uuid.uuid1()) + '
 ```javascript
 const pytalk = require('pytalk');
 
-let worker = pytalk.worker();      // Create python process
+let worker = pytalk.worker();      // Create Python process
 
 let math = worker.import('math')   // Load modules
   , os   = worker.import('os')
@@ -51,7 +51,7 @@ arr = np.sqrt(arr)                 // still PyObject instance
 arr.tolist()                       // [2, 3, 4]
 ```
 
-Note that __objects proxied by PyObjects don't get garbage collected by Python__
+Note that __objects proxied by PyObjects don't get garbage collected by Python__. You can unreference them manually using `unrefAll()`.
 
 ### Documentation
 
@@ -59,27 +59,34 @@ Note that __objects proxied by PyObjects don't get garbage collected by Python__
 or, which is the same `pytalk.worker(scriptPath, options)`
 
 ###### `scriptPath`
-	path to the python script.
+	path to the Python script.
 
 ###### `options`
-* `pythonPath` - path to python binary. Default is `python`
-* `stdout` - callback called when python script prints something. Default is `console.log`
-* `stderr` - callback called on python's raised errors. Default is `console.log`
+* `PythonPath` - path to Python binary. Default is `python`
+* `stdout` - callback called when Python script prints something. Default is `console.log`
+* `stderr` - callback called on Python's raised errors. Default is `console.log`
+* `async` - If true, PyObject's methods become async. Default is `false`
 
 #####```Worker.method(methodName)```
-Returns a `function(arg1, ..., argN, callback)`. `args` are the args passed to the python method, registered using ```@pytalk_method(methodName)``` decorator. `callback` is a error-first function, called when python method finishes its work. Use this when you need async version of some sync python function. 
+Returns a `function(arg1, ..., argN, callback)`. `args` are the args passed to the Python method, registered using ```@pytalk_method(methodName)``` decorator. `callback` is a error-first function, called when Python method finishes its work. Use this when you need async version of some sync Python function. 
 
 #####```Worker.methodSync(methodName)```
-Same thing as `Worker.method`, except it waits until python method gets its work done, and returns whatever python function returns. Uses [deasync](https://github.com/abbr/deasync) under the hood.
+Same thing as `Worker.method`, except it waits until Python method gets its work done, and returns whatever Python function returns. Uses [deasync](https://github.com/abbr/deasync) under the hood.
 
 #####```Worker.on(eventName, callback)```
-Registers event handler for `eventName`. `callback` gets triggered with `(err, args)` passed every time `pytalk_emit(eventName, args)` is called in python code.
+Registers event handler for `eventName`. `callback` gets triggered with `(err, args)` passed every time `pytalk_emit(eventName, args)` is called in Python code.
 
 #####```Worker.emit(eventName, ...args)```
-Calls python function, registered with `@pytalk_on(eventName)` decorator, or through `pytalk_on(eventName, callback)`
+Calls Python function, registered with `@pytalk_on(eventName)` decorator, or through `pytalk_on(eventName, callback)`
 
 #####```Worker.close()```
-Sends exitSignal to python's event loop. Worker closes as soon as it finishes its current job.
+Sends exitSignal to Python's event loop. Worker closes as soon as it finishes its current job.
+
+#####```Worker.unrefAll()```
+Removes all references to Python objects, proxied by JavaScript objects. This allows Python GC to free resources if it needs to.
+
+#####```Worker.import(moduleName)```
+Imports moduleName in Python, and returns a proxy PyObject.
 
 ### License
 MIT
