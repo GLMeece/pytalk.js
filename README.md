@@ -62,10 +62,10 @@ or, which is the same `pytalk.worker(scriptPath, options)`
 	path to the Python script.
 
 ###### `options`
-* `PythonPath` - path to Python binary. Default is `python`
-* `stdout` - callback called when Python script prints something. Default is `console.log`
-* `stderr` - callback called on Python's raised errors. Default is `console.log`
-* `async` - If true, PyObject's methods become async. Default is `false`
+* `pythonPath` - path to the Python binary. Default is `python`.
+* `stdout` - callback called when Python script prints something. Default is `console.log`.
+* `stderr` - callback called on Python's raised errors. Default is `console.log`.
+* `async` - If true, PyObject's methods become async. Default is `false`. ([example](https://github.com/tsim0/pytalk.js/blob/master/test/test.js#L285))
 
 #####```Worker.method(methodName)```
 Returns a `function(arg1, ..., argN, callback)`. `args` are the args passed to the Python method, registered using ```@pytalk_method(methodName)``` decorator. `callback` is a error-first function, called when Python method finishes its work. Use this when you need async version of some sync Python function. 
